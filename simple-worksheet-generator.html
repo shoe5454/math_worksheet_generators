@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Worksheet Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f5f5f5;
+    }
+    
+    .container {
+      max-width: 800px;
+      margin: 0 auto;
+      background-color: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 200px;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    input {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+    
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    button {
+      padding: 10px 15px;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    
+    .generate-btn {
+      background-color: #2563eb;
+      color: white;
+    }
+    
+    .print-btn {
+      background-color: #16a34a;
+      color: white;
+    }
+    
+    .preview {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 15px;
+      background-color: #f9f9f9;
+    }
+    
+    .preview-title {
+      font-size: 20px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 15px;
+    }
+    
+    .problems-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 35px;
+    }
+    
+    .problem {
+      background: white;
+      padding: 10px;
+    }
+    
+    .problem-number {
+      font-weight: bold;
+      margin-bottom: 30px;
+      font-size: 16px;
+      font-family: 'Verdana', 'Tahoma', sans-serif;
+    }
+    
+    .problem-content {
+      position: relative;
+      border-top: 2px solid #666;
+      border-bottom: 2px solid #666;
+      padding: 0;
+      font-family: 'Verdana', 'Tahoma', sans-serif;
+      width: 120px;
+    }
+    
+    .digit-row {
+      display: flex;
+      margin-bottom: 8px;
+    }
+    
+    .placeholder {
+      width: 30%;
+      text-align: center;
+    }
+    
+    .digit {
+      width: 35%;
+      text-align: center;
+      font-size: 22px;
+      font-family: 'Verdana', 'Tahoma', sans-serif;
+      height: 30px;
+    }
+    
+    .operator {
+      width: 30%;
+      text-align: center;
+      font-size: 22px;
+      font-family: 'Verdana', 'Tahoma', sans-serif;
+    }
+    
+    .answer-line {
+      border-top: 2px solid black;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+    
+    .answer-space {
+      height: 35px;
+    }
+    
+    .vertical-line-1 {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 30%;
+      border-left: 2px solid #666;
+    }
+    
+    .vertical-line-2 {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 65%;
+      border-left: 2px solid #666;
+    }
+    
+    .more-problems {
+      text-align: center;
+      color: #666;
+      margin-top: 10px;
+    }
+    
+    .print-instructions {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f0f9ff;
+      border-left: 4px solid #3b82f6;
+      color: #1e40af;
+    }
+    
+    .print-view {
+      display: none; /* Initially hidden */
+      background-color: white;
+      padding: 20px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      z-index: 1000;
+      overflow-y: auto;
+    }
+    
+    .print-view-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .print-view-close {
+      background-color: #ef4444;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    .print-view-print {
+      background-color: #16a34a;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      
+      .print-view, .print-view * {
+        visibility: visible;
+      }
+      
+      .print-view {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      
+      .print-view-header {
+        display: none;
+      }
+      
+      @page {
+        size: A4;
+        margin: 0.5cm;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Worksheet Generator</h1>
+    
+    <div class="controls">
+      <div class="control-group">
+        <label for="titleInput">Worksheet Title:</label>
+        <input type="text" id="titleInput" value="Addition Practice" />
+      </div>
+      
+      <div class="control-group">
+        <label for="numProblemsInput">Number of Problems:</label>
+        <input type="number" id="numProblemsInput" min="1" max="50" value="12" />
+      </div>
+    </div>
+    
+    <div class="buttons">
+      <button class="generate-btn" id="generateButton">Generate Worksheet</button>
+      <button class="print-btn" id="printButton" style="display: none;">Printable View</button>
+    </div>
+    
+    <div class="preview" id="preview">
+      <h2>Preview will appear here after generating problems.</h2>
+    </div>
+  </div>
+  
+  <div class="print-view" id="printView">
+    <div class="print-view-header">
+      <button class="print-view-close" id="closeButton">Close</button>
+      <div>Use your browser's print function (Ctrl+P or ⌘+P) to print this worksheet</div>
+      <button class="print-view-print" id="doPrintButton">Print</button>
+    </div>
+    <div id="printContent"></div>
+  </div>
+  
+  <script>
+    // Variable to hold the problems
+    var problems = [];
+    
+    // Helper functions
+    function getTensDigit(num) {
+      return Math.floor(num / 10);
+    }
+    
+    function getOnesDigit(num) {
+      return num % 10;
+    }
+    
+    function hasTensDigit(num) {
+      return num >= 10;
+    }
+    
+    // Generate random number (1-99)
+    function generateRandomNumber() {
+      return Math.floor(Math.random() * 99) + 1; // 1-99
+    }
+    
+    // Create HTML for a single problem
+    function createProblemHTML(problem, number) {
+      return '<div class="problem">' +
+        '<div class="problem-number">' + problem.num1 + ' + ' + problem.num2 + ' = </div>' +
+        '<div class="problem-content">' +
+          '<div class="digit-row">' +
+            '<div class="placeholder"></div>' +
+            '<div class="digit"></div>' +
+            '<div class="digit"></div>' +
+          '</div>' +
+          '<div class="digit-row">' +
+            '<div class="operator">+</div>' +
+            '<div class="digit"></div>' +
+            '<div class="digit"></div>' +
+          '</div>' +
+          '<div class="answer-line"></div>' +
+          '<div class="answer-space"></div>' +
+          '<div class="vertical-line-1"></div>' +
+          '<div class="vertical-line-2"></div>' +
+        '</div>' +
+      '</div>';
+    }
+    
+    // Generate problems
+    function generateProblems() {
+      var numProblems = parseInt(document.getElementById('numProblemsInput').value) || 12;
+      var title = document.getElementById('titleInput').value || 'Addition Practice';
+      
+      problems = [];
+      for (var i = 0; i < numProblems; i++) {
+        var num1 = generateRandomNumber();
+        var num2 = generateRandomNumber();
+        problems.push({
+          num1: num1,
+          num2: num2
+        });
+      }
+      
+      // Create preview
+      var previewHTML = '<div class="preview-title">' + title + '</div>' +
+        '<div class="problems-grid">';
+      
+      // Add first 6 problems (or all if less than 6)
+      var previewProblems = problems.slice(0, Math.min(6, problems.length));
+      for (var i = 0; i < previewProblems.length; i++) {
+        previewHTML += createProblemHTML(previewProblems[i], i + 1);
+      }
+      
+      previewHTML += '</div>';
+      
+      // Add "more problems" note if applicable
+      if (problems.length > 6) {
+        previewHTML += '<div class="more-problems">' +
+          '(+ ' + (problems.length - 6) + ' more problems in printable view)' +
+        '</div>';
+      }
+      
+      document.getElementById('preview').innerHTML = previewHTML;
+      document.getElementById('printButton').style.display = 'inline-block';
+    }
+    
+    // Show print view
+    function showPrintView() {
+      var title = document.getElementById('titleInput').value || 'Addition Practice';
+      
+      var printHTML = '<div class="preview-title">' + title + '</div>' +
+        '<div class="problems-grid">';
+      
+      // Add all problems
+      for (var i = 0; i < problems.length; i++) {
+        printHTML += createProblemHTML(problems[i], i + 1);
+      }
+      
+      printHTML += '</div>';
+      
+      document.getElementById('printContent').innerHTML = printHTML;
+      document.getElementById('printView').style.display = 'block';
+    }
+    
+    // Close print view
+    function closePrintView() {
+      document.getElementById('printView').style.display = 'none';
+    }
+    
+    // Print the worksheet
+    function doPrint() {
+      window.print();
+    }
+    
+    // Add event listeners when the page loads
+    window.onload = function() {
+      document.getElementById('generateButton').onclick = generateProblems;
+      document.getElementById('printButton').onclick = showPrintView;
+      document.getElementById('closeButton').onclick = closePrintView;
+      document.getElementById('doPrintButton').onclick = doPrint;
+    };
+  </script>
+</body>
+</html>
